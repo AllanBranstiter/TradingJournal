@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useMetrics } from '@/lib/hooks/useMetrics'
 import { useTrades } from '@/lib/hooks/useTrades'
 import { MetricCard } from '@/components/dashboard/MetricCard'
@@ -15,6 +16,12 @@ import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 export default function DashboardPage() {
+  console.log('[DASHBOARD] Dashboard page component rendering')
+  
+  useEffect(() => {
+    console.log('[DASHBOARD] Dashboard page mounted successfully')
+  }, [])
+  
   const { metrics, loading: metricsLoading } = useMetrics()
   const { trades, loading: tradesLoading } = useTrades()
   

@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase/route-handler'
 
 export async function POST(request: NextRequest) {
+  console.log('[SIGNIN] Starting signin process')
   const response = NextResponse.json({ success: true })
   
   try {
     const { email, password } = await request.json()
+    console.log('[SIGNIN] Signin attempt for email:', email)
 
     // Validate required fields
     if (!email || !password) {
+      console.log('[SIGNIN] Missing required fields')
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -17,12 +20,14 @@ export async function POST(request: NextRequest) {
 
     const supabase = createRouteHandlerClient(request, response)
 
+    console.log('[SIGNIN] Calling Supabase signInWithPassword')
     const { data: authData, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) {
+      console.log('[SIGNIN] Signin failed:', error.message)
       return NextResponse.json(
         {
           success: false,
@@ -33,6 +38,8 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    console.log('[SIGNIN] Authentication successful for user:', authData.user?.id)
 
     // Check if user has a profile - if not, create it (first-time login)
     if (authData.user) {
@@ -83,12 +90,20 @@ export async function POST(request: NextRequest) {
         }
         
         console.log('[SIGNIN] First-time login profile setup completed')
+      } else {
+        console.log('[SIGNIN] Existing profile found for user')
       }
     }
 
+    // Log cookie status before returning
+    const responseCookies = response.cookies.getAll()
+    console.log('[SIGNIN] Response cookies being sent:', responseCookies.length, 'cookies')
+    console.log('[SIGNIN] Cookie names:', responseCookies.map(c => c.name))
+    console.log('[SIGNIN] Signin successful, returning response')
+
     return response
   } catch (error) {
-    console.error('Signin error:', error)
+    console.error('[SIGNIN] Signin error:', error)
     return NextResponse.json(
       { success: false, error: 'An unexpected error occurred' },
       { status: 500 }
