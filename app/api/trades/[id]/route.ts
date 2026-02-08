@@ -9,9 +9,10 @@ import { calculatePnL, calculateReturnPercent } from '@/lib/utils/calculations'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -27,7 +28,7 @@ export async function GET(
         post_trade_journals(*),
         strategies(id, name, description)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
@@ -52,9 +53,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -66,7 +68,7 @@ export async function PUT(
     const { data: existingTrade, error: fetchError } = await supabase
       .from('trades')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
@@ -136,7 +138,7 @@ export async function PUT(
           screenshot_url: validatedTrade.screenshot_url || null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', params.id)
+        .eq('id', id)
 
       if (updateError) {
         console.error('Error updating trade:', updateError)
@@ -152,7 +154,7 @@ export async function PUT(
         const { data: existingJournal } = await supabase
           .from('pre_trade_journals')
           .select('id')
-          .eq('trade_id', params.id)
+          .eq('trade_id', id)
           .single()
 
         if (existingJournal) {
@@ -167,7 +169,7 @@ export async function PUT(
             .from('pre_trade_journals')
             .insert({
               user_id: user.id,
-              trade_id: params.id,
+              trade_id: id,
               ...preJournalValidation.data,
             })
         }
@@ -182,7 +184,7 @@ export async function PUT(
         const { data: existingJournal } = await supabase
           .from('post_trade_journals')
           .select('id')
-          .eq('trade_id', params.id)
+          .eq('trade_id', id)
           .single()
 
         if (existingJournal) {
@@ -196,14 +198,14 @@ export async function PUT(
           const { data: preJournal } = await supabase
             .from('pre_trade_journals')
             .select('id')
-            .eq('trade_id', params.id)
+            .eq('trade_id', id)
             .single()
 
           await supabase
             .from('post_trade_journals')
             .insert({
               user_id: user.id,
-              trade_id: params.id,
+              trade_id: id,
               pre_trade_journal_id: preJournal?.id || null,
               ai_analysis_completed: false,
               ai_insights: null,
@@ -222,7 +224,7 @@ export async function PUT(
         post_trade_journals(*),
         strategies(id, name)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     return NextResponse.json({ data: updatedTrade })
@@ -239,9 +241,10 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
@@ -253,7 +256,7 @@ export async function DELETE(
     const { data: existingTrade, error: fetchError } = await supabase
       .from('trades')
       .select('id')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
@@ -265,7 +268,7 @@ export async function DELETE(
     const { error: deleteError } = await supabase
       .from('trades')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
 
     if (deleteError) {
       console.error('Error deleting trade:', deleteError)
