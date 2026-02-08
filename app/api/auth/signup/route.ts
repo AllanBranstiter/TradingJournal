@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase/route-handler'
 
 export async function POST(request: NextRequest) {
+  console.log('[SIGNUP] Starting signup process')
   const response = NextResponse.json({ success: true })
+  console.log('[SIGNUP] Created response object')
   
   try {
+    console.log('[SIGNUP] Parsing request body...')
     const { email, password, displayName } = await request.json()
+    console.log('[SIGNUP] Request body parsed:', { email, displayName })
 
     // Validate required fields
     if (!email || !password || !displayName) {
@@ -15,10 +19,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    console.log('[SIGNUP] Creating Supabase client...')
     const supabase = createRouteHandlerClient(request, response)
+    console.log('[SIGNUP] Supabase client created successfully')
 
     // 1. Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    console.log('[SIGNUP] Calling supabase.auth.signUp...')
+    const signUpResult = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -26,6 +33,14 @@ export async function POST(request: NextRequest) {
           display_name: displayName,
         },
       },
+    })
+    console.log('[SIGNUP] signUp completed, extracting data...')
+    const { data: authData, error: authError } = signUpResult
+    console.log('[SIGNUP] signUp result:', {
+      hasData: !!authData,
+      hasUser: !!authData?.user,
+      hasError: !!authError,
+      errorMessage: authError?.message
     })
 
     if (authError) {
@@ -88,9 +103,11 @@ export async function POST(request: NextRequest) {
       // Gamification can be created later
     }
 
+    console.log('[SIGNUP] Signup completed successfully, returning response')
     return response
   } catch (error) {
-    console.error('Signup error:', error)
+    console.error('[SIGNUP] ERROR - Caught exception:', error)
+    console.error('[SIGNUP] ERROR - Stack trace:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
       { success: false, error: 'An unexpected error occurred' },
       { status: 500 }
