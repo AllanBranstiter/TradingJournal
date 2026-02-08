@@ -43,13 +43,16 @@ export async function POST(request: NextRequest) {
       errorMessage: authError?.message
     })
 
+    console.log('[SIGNUP] About to check authError...')
     if (authError) {
+      console.log('[SIGNUP] authError detected, returning 400')
       return NextResponse.json(
         { success: false, error: authError.message },
         { status: 400 }
       )
     }
 
+    console.log('[SIGNUP] No authError, checking authData.user...')
     if (!authData.user) {
       return NextResponse.json(
         { success: false, error: 'Failed to create user' },
