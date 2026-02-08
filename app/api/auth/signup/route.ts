@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[SIGNUP] No authError, checking authData.user...')
     if (!authData.user) {
+      console.log('[SIGNUP] No user in authData, returning 500')
       return NextResponse.json(
         { success: false, error: 'Failed to create user' },
         { status: 500 }
@@ -61,10 +62,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Sign in immediately after signup to establish session
+    console.log('[SIGNUP] authData.user exists, calling signInWithPassword...')
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
+    console.log('[SIGNUP] signInWithPassword completed:', { hasError: !!signInError, errorMessage: signInError?.message })
 
     if (signInError) {
       return NextResponse.json(
