@@ -1,140 +1,132 @@
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+'use client'
+
+import { useMetrics } from '@/lib/hooks/useMetrics'
+import { useTrades } from '@/lib/hooks/useTrades'
+import { MetricCard } from '@/components/dashboard/MetricCard'
+import { EquityCurve } from '@/components/dashboard/EquityCurve'
+import { RecentTrades } from '@/components/dashboard/RecentTrades'
+import { PerformanceChart } from '@/components/dashboard/PerformanceChart'
+import { DetailedMetrics } from '@/components/dashboard/DetailedMetrics'
+import { StrategyBreakdown } from '@/components/dashboard/StrategyBreakdown'
+import { formatCurrency, formatPercent } from '@/lib/utils/formatting'
+import { DollarSign, TrendingUp, Hash, Flame } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { DollarSign, TrendingUp, Hash, Flame, PlusCircle, Upload } from 'lucide-react'
+import Link from 'next/link'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 export default function DashboardPage() {
-  // Placeholder data - will be replaced with real data later
-  const metrics = [
-    {
-      title: 'Total P&L',
-      value: '$12,450.00',
-      icon: DollarSign,
-      trend: '+15.3%',
-      positive: true,
-    },
-    {
-      title: 'Win Rate',
-      value: '68.5%',
-      icon: TrendingUp,
-      trend: '+2.4%',
-      positive: true,
-    },
-    {
-      title: 'Total Trades',
-      value: '247',
-      icon: Hash,
-      trend: '+12',
-      positive: true,
-    },
-    {
-      title: 'Current Streak',
-      value: '5 wins',
-      icon: Flame,
-      trend: '🔥',
-      positive: true,
-    },
-  ]
-
+  const { metrics, loading: metricsLoading } = useMetrics()
+  const { trades, loading: tradesLoading } = useTrades()
+  
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-text-primary">
-          Dashboard
-        </h1>
-        <p className="mt-2 text-text-secondary">
-          Welcome back! Here's an overview of your trading performance.
-        </p>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((metric) => {
-          const Icon = metric.icon
-          return (
-            <Card
-              key={metric.title}
-              className="border-background-tertiary/20 bg-background-secondary"
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-text-secondary">
-                  {metric.title}
-                </CardTitle>
-                <Icon className="h-4 w-4 text-text-tertiary" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold font-mono text-text-primary">
-                  {metric.value}
-                </div>
-                <p
-                  className={`mt-1 text-xs ${
-                    metric.positive
-                      ? 'text-accent-success'
-                      : 'text-accent-danger'
-                  }`}
-                >
-                  {metric.trend} from last month
-                </p>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {/* Quick Actions */}
-      <div>
-        <h2 className="mb-4 text-xl font-semibold text-text-primary">
-          Quick Actions
-        </h2>
-        <div className="flex flex-wrap gap-4">
-          <Button asChild size="lg">
-            <Link href="/dashboard/trades/new">
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Log New Trade
-            </Link>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-text-primary">Dashboard</h1>
+          <p className="text-text-secondary mt-1">Your trading performance at a glance</p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild>
+            <Link href="/dashboard/trades/new">Log Trade</Link>
           </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/dashboard/import">
-              <Upload className="mr-2 h-5 w-5" />
-              Import CSV
-            </Link>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/import">Import CSV</Link>
           </Button>
         </div>
       </div>
-
-      {/* Recent Trades Section */}
-      <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-text-primary">
-            Recent Trades
-          </h2>
-          <Button asChild variant="outline">
-            <Link href="/dashboard/trades">View All</Link>
-          </Button>
-        </div>
-        <Card className="border-background-tertiary/20 bg-background-secondary">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-background-tertiary">
-                <Hash className="h-8 w-8 text-text-tertiary" />
-              </div>
-              <h3 className="mb-2 text-lg font-semibold text-text-primary">
-                No trades yet
-              </h3>
-              <p className="mb-4 text-sm text-text-secondary">
-                Start logging your trades to see them here
-              </p>
-              <Button asChild>
-                <Link href="/dashboard/trades/new">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Log Your First Trade
-                </Link>
-              </Button>
-            </div>
+      
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          title="Total P&L"
+          value={formatCurrency(metrics?.totalPnL || 0)}
+          icon={<DollarSign className="h-5 w-5" />}
+          trend={metrics && metrics.totalPnL > 0 ? 'up' : metrics && metrics.totalPnL < 0 ? 'down' : 'neutral'}
+          loading={metricsLoading}
+        />
+        <MetricCard
+          title="Win Rate"
+          value={formatPercent(metrics?.winRate || 0)}
+          icon={<TrendingUp className="h-5 w-5" />}
+          trend={metrics && metrics.winRate >= 50 ? 'up' : 'neutral'}
+          loading={metricsLoading}
+        />
+        <MetricCard
+          title="Total Trades"
+          value={metrics?.totalTrades || 0}
+          icon={<Hash className="h-5 w-5" />}
+          trend="neutral"
+          loading={metricsLoading}
+        />
+        <MetricCard
+          title="Current Streak"
+          value={`${metrics?.currentStreak || 0}${(metrics?.currentStreak || 0) > 0 ? ' 🔥' : ''}`}
+          icon={<Flame className="h-5 w-5" />}
+          trend={metrics && metrics.currentStreak > 0 ? 'up' : metrics && metrics.currentStreak < 0 ? 'down' : 'neutral'}
+          loading={metricsLoading}
+        />
+      </div>
+      
+      {/* Detailed Metrics */}
+      <DetailedMetrics 
+        metrics={metrics ? {
+          avgWin: metrics.avgWin,
+          avgLoss: metrics.avgLoss,
+          largestWin: metrics.largestWin,
+          largestLoss: metrics.largestLoss,
+          profitFactor: metrics.profitFactor,
+          expectancy: metrics.expectancy,
+          avgRR: metrics.avgRR,
+        } : null}
+        loading={metricsLoading}
+      />
+      
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="bg-background-secondary border-background-tertiary">
+          <CardHeader>
+            <CardTitle>Equity Curve</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EquityCurve trades={trades} loading={tradesLoading} />
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-background-secondary border-background-tertiary">
+          <CardHeader>
+            <CardTitle>Wins vs Losses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PerformanceChart trades={trades} loading={tradesLoading} />
           </CardContent>
         </Card>
       </div>
+      
+      {/* Recent Trades */}
+      <Card className="bg-background-secondary border-background-tertiary">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Recent Trades</CardTitle>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/dashboard/trades">View All</Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <RecentTrades trades={trades?.slice(0, 5)} loading={tradesLoading} />
+        </CardContent>
+      </Card>
+
+      {/* Strategy Breakdown */}
+      <Card className="bg-background-secondary border-background-tertiary">
+        <CardHeader>
+          <CardTitle>Strategy Performance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StrategyBreakdown trades={trades} loading={tradesLoading} />
+        </CardContent>
+      </Card>
     </div>
   )
 }
