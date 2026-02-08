@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -31,11 +31,7 @@ export default function PsychologyPage() {
   const [period, setPeriod] = useState('week')
   const [metrics, setMetrics] = useState<PsychologyMetrics | null>(null)
 
-  useEffect(() => {
-    loadMetrics()
-  }, [period])
-
-  const loadMetrics = async () => {
+  const loadMetrics = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch(`/api/psychology/metrics?period=${period}`)
@@ -46,7 +42,11 @@ export default function PsychologyPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [period])
+
+  useEffect(() => {
+    loadMetrics()
+  }, [loadMetrics])
 
   const getDisciplineColor = (score: number) => {
     if (score >= 80) return 'text-accent-profit'

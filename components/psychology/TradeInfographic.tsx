@@ -45,10 +45,10 @@ export function TradeInfographic({ trade, journal, disciplineScore }: TradeInfog
       const html2canvas = (await import('html2canvas')).default
       
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#0a0f1e',
+        background: '#0a0f1e',
         scale: 2,
         logging: false,
-      })
+      } as any)
       
       // Convert to blob and download
       canvas.toBlob((blob: Blob | null) => {
@@ -74,10 +74,10 @@ export function TradeInfographic({ trade, journal, disciplineScore }: TradeInfog
     try {
       const html2canvas = (await import('html2canvas')).default
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#0a0f1e',
+        background: '#0a0f1e',
         scale: 2,
         logging: false,
-      })
+      } as any)
       
       canvas.toBlob(async (blob: Blob | null) => {
         if (blob && navigator.share) {
