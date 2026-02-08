@@ -1,6 +1,116 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
+// Helper function to transform database record to API response format
+function transformGamificationData(gamification: any, tradeCount: number = 0) {
+  const currentStreak = gamification?.current_journaling_streak ?? 0
+  const longestStreak = gamification?.longest_journaling_streak ?? 0
+  const badges = gamification?.badges ?? []
+  const totalTrades = tradeCount ?? 0
+  
+  // Calculate level and XP based on total trades
+  const level = Math.floor(totalTrades / 10) + 1
+  const xp = totalTrades % 10
+  const xp_to_next_level = 10
+  
+  // Generate milestones based on current progress
+  const milestones = [
+    {
+      id: 'first_trade',
+      name: 'First Trade',
+      description: 'Log your first trade',
+      target_value: 1,
+      current_value: Math.min(totalTrades, 1),
+      completed: totalTrades >= 1
+    },
+    {
+      id: '10_trades',
+      name: '10 Trades',
+      description: 'Log 10 trades',
+      target_value: 10,
+      current_value: Math.min(totalTrades, 10),
+      completed: totalTrades >= 10
+    },
+    {
+      id: '50_trades',
+      name: '50 Trades',
+      description: 'Log 50 trades',
+      target_value: 50,
+      current_value: Math.min(totalTrades, 50),
+      completed: totalTrades >= 50
+    },
+    {
+      id: '100_trades',
+      name: '100 Trades',
+      description: 'Log 100 trades',
+      target_value: 100,
+      current_value: Math.min(totalTrades, 100),
+      completed: totalTrades >= 100
+    }
+  ]
+  
+  // Transform badges to match expected format
+  const transformedBadges = badges.map((b: any, index: number) => ({
+    id: b.badge || `badge_${index}`,
+    name: getBadgeName(b.badge),
+    description: getBadgeDescription(b.badge),
+    icon: getBadgeIcon(b.badge),
+    earned_at: b.earned_at
+  }))
+  
+  return {
+    current_streak: currentStreak,
+    longest_streak: longestStreak,
+    total_trades: totalTrades,
+    total_journal_entries: gamification?.total_days_journaled ?? 0,
+    badges: transformedBadges,
+    milestones: milestones,
+    level: level,
+    xp: xp,
+    xp_to_next_level: xp_to_next_level
+  }
+}
+
+// Helper functions for badge display
+function getBadgeName(badgeType: string): string {
+  const names: { [key: string]: string } = {
+    '10_trades': '10 Trades',
+    '50_trades': '50 Trades',
+    '100_trades': '100 Trades',
+    '500_trades': '500 Trades',
+    '7_day_streak': '7 Day Streak',
+    '30_day_streak': '30 Day Streak',
+    '100_day_streak': '100 Day Streak'
+  }
+  return names[badgeType] || badgeType
+}
+
+function getBadgeDescription(badgeType: string): string {
+  const descriptions: { [key: string]: string } = {
+    '10_trades': 'Logged 10 trades',
+    '50_trades': 'Logged 50 trades',
+    '100_trades': 'Logged 100 trades',
+    '500_trades': 'Logged 500 trades',
+    '7_day_streak': 'Maintained a 7-day journaling streak',
+    '30_day_streak': 'Maintained a 30-day journaling streak',
+    '100_day_streak': 'Maintained a 100-day journaling streak'
+  }
+  return descriptions[badgeType] || 'Achievement unlocked'
+}
+
+function getBadgeIcon(badgeType: string): string {
+  const icons: { [key: string]: string } = {
+    '10_trades': '🎯',
+    '50_trades': '🏆',
+    '100_trades': '💎',
+    '500_trades': '👑',
+    '7_day_streak': '🔥',
+    '30_day_streak': '⚡',
+    '100_day_streak': '✨'
+  }
+  return icons[badgeType] || '🏅'
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -45,7 +155,16 @@ export async function GET(request: NextRequest) {
       gamification = newRecord
     }
 
-    return NextResponse.json({ data: gamification })
+    // Get trade count for level calculation
+    const { count: tradeCount } = await supabase
+      .from('trades')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    // Transform data to match expected interface
+    const transformedData = transformGamificationData(gamification, tradeCount ?? 0)
+
+    return NextResponse.json({ data: transformedData })
 
   } catch (error) {
     console.error('Gamification fetch error:', error)

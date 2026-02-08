@@ -27,9 +27,18 @@ export function GamificationWidget() {
     return null
   }
 
-  const nextMilestone = data.milestones.find(m => !m.completed)
-  const progressPercentage = nextMilestone 
-    ? (nextMilestone.current_value / nextMilestone.target_value) * 100 
+  // Add defensive null checks for all data properties
+  const milestones = data.milestones ?? []
+  const badges = data.badges ?? []
+  const currentStreak = data.current_streak ?? 0
+  const longestStreak = data.longest_streak ?? 0
+  const level = data.level ?? 1
+  const xp = data.xp ?? 0
+  const xpToNextLevel = data.xp_to_next_level ?? 10
+  
+  const nextMilestone = milestones.find(m => !m.completed)
+  const progressPercentage = nextMilestone
+    ? (nextMilestone.current_value / nextMilestone.target_value) * 100
     : 0
 
   return (
@@ -53,31 +62,31 @@ export function GamificationWidget() {
             <div>
               <p className="text-sm text-text-secondary">Current Streak</p>
               <p className="text-2xl font-bold text-text-primary">
-                {data.current_streak} {data.current_streak === 1 ? 'day' : 'days'}
+                {currentStreak} {currentStreak === 1 ? 'day' : 'days'}
               </p>
             </div>
           </div>
-          {data.longest_streak > 0 && (
+          {longestStreak > 0 && (
             <div className="text-right">
               <p className="text-xs text-text-tertiary">Best Streak</p>
               <p className="text-sm font-semibold text-accent-warning">
-                {data.longest_streak} {data.longest_streak === 1 ? 'day' : 'days'}
+                {longestStreak} {longestStreak === 1 ? 'day' : 'days'}
               </p>
             </div>
           )}
         </div>
 
         {/* Badges Earned */}
-        {data.badges.length > 0 && (
+        {badges.length > 0 && (
           <div>
             <div className="mb-3 flex items-center gap-2">
               <Trophy className="h-4 w-4 text-text-secondary" />
               <p className="text-sm font-medium text-text-secondary">
-                Badges Earned ({data.badges.length})
+                Badges Earned ({badges.length})
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              {data.badges.slice(0, 6).map((badge) => (
+              {badges.slice(0, 6).map((badge) => (
                 <Badge
                   key={badge.id}
                   variant="outline"
@@ -88,9 +97,9 @@ export function GamificationWidget() {
                   {badge.name}
                 </Badge>
               ))}
-              {data.badges.length > 6 && (
+              {badges.length > 6 && (
                 <Badge variant="outline" className="bg-background-tertiary/30">
-                  +{data.badges.length - 6} more
+                  +{badges.length - 6} more
                 </Badge>
               )}
             </div>
@@ -120,13 +129,13 @@ export function GamificationWidget() {
         {/* Level Info */}
         <div className="rounded-lg border border-accent-info/20 bg-accent-info/5 p-3">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-text-primary">Level {data.level}</p>
+            <p className="text-sm font-medium text-text-primary">Level {level}</p>
             <p className="text-xs text-text-secondary">
-              {data.xp} / {data.xp + data.xp_to_next_level} XP
+              {xp} / {xp + xpToNextLevel} XP
             </p>
           </div>
-          <Progress 
-            value={(data.xp / (data.xp + data.xp_to_next_level)) * 100} 
+          <Progress
+            value={(xp / (xp + xpToNextLevel)) * 100}
             className="h-1.5"
           />
         </div>
