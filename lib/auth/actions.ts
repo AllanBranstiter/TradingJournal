@@ -63,7 +63,22 @@ export async function signUp(
     }
   }
 
-  // 2. Create user_profiles record
+  // 2. Create user_profiles record using service role to bypass RLS
+  // Note: We need to use a separate Supabase client with service role for initial setup
+  // For now, sign in immediately after signup to establish session
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (signInError) {
+    return {
+      success: false,
+      error: 'Account created but sign-in failed. Please try logging in.',
+    }
+  }
+
+  // Now with active session, create profile
   const { error: profileError } = await supabase
     .from('user_profiles')
     .insert({
@@ -73,28 +88,24 @@ export async function signUp(
     })
 
   if (profileError) {
-    // If profile creation fails, we should handle this gracefully
     console.error('Failed to create user profile:', profileError)
-    // Don't fail the signup, as the user is already created
-    // The profile can be created later via a trigger or manually
+    // Profile creation will be retried or created via database trigger
   }
 
-  // 3. Create gamification record
+  // 3. Create gamification record with correct column names
   const { error: gamificationError } = await supabase
     .from('gamification')
     .insert({
       user_id: authData.user.id,
-      current_streak: 0,
-      longest_streak: 0,
+      current_journaling_streak: 0,
+      longest_journaling_streak: 0,
       total_trades_logged: 0,
-      total_journals_written: 0,
-      level: 1,
-      experience_points: 0,
+      total_days_journaled: 0,
     })
 
   if (gamificationError) {
     console.error('Failed to create gamification record:', gamificationError)
-    // Don't fail the signup
+    // Gamification can be created later
   }
 
   revalidatePath('/', 'layout')
