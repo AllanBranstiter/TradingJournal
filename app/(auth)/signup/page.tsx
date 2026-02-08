@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { signUp } from '@/lib/auth/actions'
+import { useRouter } from 'next/navigation'
 import { signUpSchema, type SignUpInput } from '@/lib/validation/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 export default function SignupPage() {
   const [error, setError] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   const {
     register,
@@ -29,12 +30,27 @@ export default function SignupPage() {
     setError('')
 
     try {
-      const result = await signUp(data.email, data.password, data.displayName)
-      
-      if (!result.success && result.error) {
-        setError(result.error)
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          displayName: data.displayName,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!result.success) {
+        setError(result.error || 'An unexpected error occurred')
+      } else {
+        // Redirect to dashboard on success
+        router.push('/dashboard')
+        router.refresh()
       }
-      // If successful, the action will redirect to /dashboard
     } catch (err) {
       setError('An unexpected error occurred. Please try again.')
     } finally {
