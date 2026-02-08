@@ -9,6 +9,7 @@ import { RecentTrades } from '@/components/dashboard/RecentTrades'
 import { PerformanceChart } from '@/components/dashboard/PerformanceChart'
 import { DetailedMetrics } from '@/components/dashboard/DetailedMetrics'
 import { StrategyBreakdown } from '@/components/dashboard/StrategyBreakdown'
+import { GamificationWidget } from '@/components/psychology/GamificationWidget'
 import { formatCurrency, formatPercent } from '@/lib/utils/formatting'
 import { DollarSign, TrendingUp, Hash, Flame } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -76,7 +77,7 @@ export default function DashboardPage() {
       </div>
       
       {/* Detailed Metrics */}
-      <DetailedMetrics 
+      <DetailedMetrics
         metrics={metrics ? {
           avgWin: metrics.avgWin,
           avgLoss: metrics.avgLoss,
@@ -88,6 +89,9 @@ export default function DashboardPage() {
         } : null}
         loading={metricsLoading}
       />
+      
+      {/* Gamification Widget */}
+      <GamificationWidget />
       
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

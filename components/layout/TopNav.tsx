@@ -1,9 +1,11 @@
 'use client'
 
-import { Menu, Settings, LogOut } from 'lucide-react'
+import { Menu, Settings, LogOut, Flame } from 'lucide-react'
 import Link from 'next/link'
 import { useMobileNav } from '@/lib/hooks/useMobileNav'
+import { useGamification } from '@/lib/hooks/useGamification'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +18,7 @@ import { Button } from '@/components/ui/button'
 
 export function TopNav() {
   const { toggle } = useMobileNav()
+  const { data: gamificationData } = useGamification()
 
   // Placeholder user data - will be replaced with real auth data later
   const user = {
@@ -51,6 +54,20 @@ export function TopNav() {
 
         {/* Spacer */}
         <div className="flex-1" />
+
+        {/* Streak Counter */}
+        {gamificationData && gamificationData.current_streak > 0 && (
+          <Link href="/dashboard/psychology" className="mr-4">
+            <Badge
+              variant="outline"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30 text-orange-500 hover:bg-orange-500/20 transition-colors px-3 py-1.5"
+            >
+              <Flame className="h-4 w-4" />
+              <span className="font-semibold">{gamificationData.current_streak}</span>
+              <span className="hidden sm:inline text-xs">day streak</span>
+            </Badge>
+          </Link>
+        )}
 
         {/* User Menu */}
         <DropdownMenu>
