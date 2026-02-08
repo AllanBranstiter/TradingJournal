@@ -64,6 +64,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if user already exists (when email confirmation is enabled,
+    // Supabase returns success but with empty identities array)
+    if (authData.user.identities && authData.user.identities.length === 0) {
+      console.log('[SIGNUP] User already exists (identities array is empty)')
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'This email is already registered. Please try logging in or use the "Forgot Password" option if you need to reset your password.',
+          existingUser: true
+        },
+        { status: 409 } // 409 Conflict status code
+      )
+    }
+
     console.log('[SIGNUP] Signup completed successfully, user must confirm email before signing in')
     return response
   } catch (error) {

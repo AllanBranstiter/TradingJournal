@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function SignupPage() {
   const [error, setError] = useState<string>('')
+  const [existingUser, setExistingUser] = useState<boolean>(false)
   const [success, setSuccess] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -29,6 +30,7 @@ export default function SignupPage() {
   const onSubmit = async (data: SignUpInput) => {
     setIsLoading(true)
     setError('')
+    setExistingUser(false)
     setSuccess('')
 
     try {
@@ -48,6 +50,7 @@ export default function SignupPage() {
 
       if (!result.success) {
         setError(result.error || 'An unexpected error occurred')
+        setExistingUser(result.existingUser || false)
       } else {
         // Show success message - user must confirm email before signing in
         setSuccess(result.message || 'Account created! Please check your email to confirm your account.')
@@ -90,7 +93,19 @@ export default function SignupPage() {
           <CardContent className="space-y-4">
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription>
+                  {error}
+                  {existingUser && (
+                    <div className="mt-3 space-y-2">
+                      <Link href="/login">
+                        <Button variant="outline" size="sm" className="w-full">
+                          Go to Login
+                        </Button>
+                      </Link>
+                      {/* TODO: Add forgot password link when that flow is implemented */}
+                    </div>
+                  )}
+                </AlertDescription>
               </Alert>
             )}
 
