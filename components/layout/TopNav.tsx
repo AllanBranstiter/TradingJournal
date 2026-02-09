@@ -29,15 +29,15 @@ export function TopNav() {
 
   const handleSignOut = async () => {
     try {
-      console.log('[TopNav] Starting signOut process...')
       await signOut()
-      console.log('[TopNav] signOut completed successfully')
     } catch (error) {
+      // Next.js 15 throws NEXT_REDIRECT errors for redirects in server actions
+      // These must be rethrown to allow the redirect to work
+      if ((error as any)?.digest?.startsWith('NEXT_REDIRECT')) {
+        throw error
+      }
+      // Only log actual errors, not redirects
       console.error('[TopNav] Sign out error:', error)
-      console.error('[TopNav] Error name:', (error as any)?.name)
-      console.error('[TopNav] Error message:', (error as any)?.message)
-      console.error('[TopNav] Error digest:', (error as any)?.digest)
-      console.error('[TopNav] Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
     }
   }
 
