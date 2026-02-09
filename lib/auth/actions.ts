@@ -123,7 +123,7 @@ export async function signOut(): Promise<void> {
   }
   
   revalidatePath('/', 'layout')
-  redirect('/login')
+  redirect('/')
 }
 
 export async function resetPassword(email: string): Promise<ActionResult> {
