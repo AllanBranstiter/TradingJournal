@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
+import { signOut } from '@/lib/auth/actions'
 
 export function TopNav() {
   const { toggle } = useMobileNav()
@@ -27,8 +28,11 @@ export function TopNav() {
   }
 
   const handleSignOut = async () => {
-    // Placeholder for sign out functionality
-    console.log('Sign out clicked')
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
   }
 
   return (
