@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Menu, Settings, LogOut, Flame } from 'lucide-react'
 import Link from 'next/link'
 import { useMobileNav } from '@/lib/hooks/useMobileNav'
@@ -16,16 +17,35 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { signOut } from '@/lib/auth/actions'
+import { createClient } from '@/lib/supabase/client'
 
 export function TopNav() {
   const { toggle } = useMobileNav()
   const { data: gamificationData } = useGamification()
+  const [user, setUser] = useState<{ email: string; name: string } | null>(null)
 
-  // Placeholder user data - will be replaced with real auth data later
-  const user = {
-    email: 'trader@example.com',
-    name: 'John Doe',
-  }
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient()
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      
+      if (authUser) {
+        // Fetch user profile for display name
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('display_name, email')
+          .eq('id', authUser.id)
+          .single()
+        
+        setUser({
+          email: profile?.email || authUser.email || 'user@example.com',
+          name: profile?.display_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0] || 'User'
+        })
+      }
+    }
+    
+    fetchUser()
+  }, [])
 
   const handleSignOut = async () => {
     try {
@@ -88,24 +108,22 @@ export function TopNav() {
             >
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-accent-info text-white">
-                  {user.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .toUpperCase()}
+                  {user?.name
+                    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase()
+                    : 'U'}
                 </AvatarFallback>
               </Avatar>
               <span className="hidden text-sm font-medium md:inline-block">
-                {user.name}
+                {user?.name || 'User'}
               </span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 bg-background-secondary border-background-tertiary">
             <DropdownMenuLabel>
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.name}</p>
+                <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {user.email}
+                  {user?.email || 'Loading...'}
                 </p>
               </div>
             </DropdownMenuLabel>
