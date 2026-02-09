@@ -126,6 +126,11 @@ export async function POST(request: NextRequest) {
       holdDurationMinutes = Math.floor((exitTime - entryTime) / (1000 * 60))
     }
 
+    // Calculate time-based columns for analytics
+    const entryDate = new Date(validatedTrade.entry_date)
+    const dayOfWeek = entryDate.getDay() // 0=Sunday, 6=Saturday
+    const hourOfDay = entryDate.getHours() // 0-23
+
     // Insert trade
     const { data: createdTrade, error: tradeError } = await supabase
       .from('trades')
@@ -144,6 +149,8 @@ export async function POST(request: NextRequest) {
         net_pnl: netPnL,
         return_percent: returnPercent,
         hold_duration_minutes: holdDurationMinutes,
+        day_of_week: dayOfWeek,
+        hour_of_day: hourOfDay,
         screenshot_url: validatedTrade.screenshot_url || null,
         imported_from_csv: false,
       })
