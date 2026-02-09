@@ -113,28 +113,15 @@ function getBadgeIcon(badgeType: string): string {
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('[API/GAMIFICATION GET] Creating Supabase client...')
     const supabase = await createClient()
-    
-    console.log('[API/GAMIFICATION GET] Getting user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
-    console.log('[API/GAMIFICATION GET] Auth result:', {
-      hasUser: !!user,
-      userId: user?.id,
-      hasError: !!authError,
-      errorMessage: authError?.message
-    })
 
     if (authError || !user) {
-      console.error('[API/GAMIFICATION GET] Auth failed - returning 401')
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
-    
-    console.log('[API/GAMIFICATION GET] Auth successful, fetching gamification data...')
 
     // Fetch or create gamification record
     let { data: gamification, error } = await supabase

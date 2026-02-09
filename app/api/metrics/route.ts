@@ -3,25 +3,12 @@ import { NextResponse } from 'next/server'
 import { calculateWinRate, calculateProfitFactorFromTrades, calculateExpectancy } from '@/lib/utils/calculations'
 
 export async function GET(request: Request) {
-  console.log('[API/METRICS GET] Creating Supabase client...')
   const supabase = await createClient()
-  
-  console.log('[API/METRICS GET] Getting user...')
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
-  console.log('[API/METRICS GET] Auth result:', {
-    hasUser: !!user,
-    userId: user?.id,
-    hasError: !!authError,
-    errorMessage: authError?.message
-  })
+  const { data: { user } } = await supabase.auth.getUser()
   
   if (!user) {
-    console.error('[API/METRICS GET] No user - returning 401')
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  
-  console.log('[API/METRICS GET] Auth successful, calculating metrics...')
   
   // Fetch all closed trades
   const { data: trades, error } = await supabase

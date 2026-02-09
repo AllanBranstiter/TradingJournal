@@ -9,25 +9,12 @@ import { calculatePnL, calculateReturnPercent } from '@/lib/utils/calculations'
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('[API/TRADES GET] Creating Supabase client...')
     const supabase = await createClient()
-    
-    console.log('[API/TRADES GET] Getting user...')
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    console.log('[API/TRADES GET] Auth result:', {
-      hasUser: !!user,
-      userId: user?.id,
-      hasError: !!authError,
-      errorMessage: authError?.message
-    })
-    
     if (authError || !user) {
-      console.error('[API/TRADES GET] Auth failed - returning 401')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    
-    console.log('[API/TRADES GET] Auth successful, fetching trades...')
 
     // Get query parameters for filtering
     const searchParams = request.nextUrl.searchParams
