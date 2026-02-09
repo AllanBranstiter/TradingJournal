@@ -29,9 +29,15 @@ export function TopNav() {
 
   const handleSignOut = async () => {
     try {
+      console.log('[TopNav] Starting signOut process...')
       await signOut()
+      console.log('[TopNav] signOut completed successfully')
     } catch (error) {
-      console.error('Sign out error:', error)
+      console.error('[TopNav] Sign out error:', error)
+      console.error('[TopNav] Error name:', (error as any)?.name)
+      console.error('[TopNav] Error message:', (error as any)?.message)
+      console.error('[TopNav] Error digest:', (error as any)?.digest)
+      console.error('[TopNav] Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
     }
   }
 

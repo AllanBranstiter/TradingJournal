@@ -113,16 +113,23 @@ export async function signUp(
 }
 
 export async function signOut(): Promise<void> {
+  console.log('[signOut] Starting signOut server action...')
   const supabase = await createClient()
   
+  console.log('[signOut] Calling supabase.auth.signOut()...')
   const { error } = await supabase.auth.signOut()
   
   if (error) {
-    console.error('Sign out error:', error)
+    console.error('[signOut] Supabase signOut error:', error)
+    console.error('[signOut] Error message:', error.message)
+    console.error('[signOut] Error name:', error.name)
     throw new Error(error.message)
   }
   
+  console.log('[signOut] Supabase signOut successful')
+  console.log('[signOut] Revalidating paths...')
   revalidatePath('/', 'layout')
+  console.log('[signOut] Calling redirect to /login...')
   redirect('/login')
 }
 
